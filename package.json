@@ -1,0 +1,17 @@
+{
+  "name": "awspack-monorepo",
+  "version": "3.913.0",
+  "workspaces": [
+    "packages/full",
+    "packages/lite"
+],
+"license": "MIT",
+"type": "module",
+  "scripts": {
+    "update": "node scripts/update-clients.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.6",
+    "node-fetch": "^3.3.2"
+  }
+}
