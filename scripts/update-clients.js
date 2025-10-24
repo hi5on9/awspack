@@ -1,75 +1,90 @@
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
-import { build } from "esbuild";
-
-const packages = [
-    { name: "awspack", dir: "packages/full", bundle: false, dependencyField: "dependencies" },
-    { name: "awspack-lite", dir: "packages/lite", bundle: false, dependencyField: "dependencies" },
-];
 
 const AWS_CLIENT_PREFIX = "@aws-sdk/client-";
 
 function _readJson(file) {
-    return JSON.parse(fs.readFileSync(file, "utf-8"));
+    return JSON.parse(fs.readFileSync(file, "utf-8"))
 }
 
-function _convertName(name) {
-    return name
-        .replace(AWS_CLIENT_PREFIX, "")
-        .split("-")
-        .map((word, index) => (index === 0 ? word : `${word[0].toUpperCase()}${word.slice(1)}`))
-        .join("");
+const FULL_DIR = "packages/full"
+const LITE_DIR = "packages/lite"
+
+function _getPkg(dir) {
+    const pkgFile = path.join(dir, "package.json")
+    const srcDir = path.join(process.cwd(), dir, "src");
+    const indexFile = path.join(srcDir, "index.js");
+    const pkg = _readJson(pkgFile)
+    const deps = pkg["dependencies"] || {} 
+    const clients = Object.keys(deps).filter((dep) => dep.startsWith(AWS_CLIENT_PREFIX));
+    return { pkgFile, pkg, deps, clients , srcDir, indexFile}
+}
+
+function _setDeprecatedComment(indexFile, client, deprecated) {
+    if (!fs.existsSync(indexFile)) return;
+    const target = `"${client}";`;
+    const lines = fs.readFileSync(indexFile, "utf-8").split("\n");
+    let changed = false;
+
+    const updated = lines.map((line) => {
+        if (!line.includes(target)) return line;
+        const hasDeprecated = /\s\/\/\s*deprecated\s*$/.test(line);
+        if (deprecated && !hasDeprecated) {
+            changed = true;
+            console.log(`[INFO] ${client} is deprecated`);
+            return `${line} // deprecated`;
+        }
+        if (!deprecated && hasDeprecated) {
+            changed = true;
+            return line.replace(/\s*\/\/\s*deprecated\s*$/, "");
+        }
+        return line;
+    });
+
+    if (changed) {
+        fs.writeFileSync(indexFile, updated.join("\n"));
+    }
 }
 
 async function updateClients() {
-    let latestVersion = null;
+    const full = _getPkg(FULL_DIR)
+    const lite = _getPkg(LITE_DIR)
+    let updateCnt = 0
 
-    // 1. check latest version from npm
-    try {
-        latestVersion = execSync(`npm view @aws-sdk/client-s3 version`).toString().trim();
-        console.log(`[INFO] Latest client version : ${latestVersion}`);
-    } catch (error) {
-        console.log("[ERROR] ❌ Failed to get version ❌", error);
-        return;
-    }
-
-    if (!latestVersion) {
-        console.log("[INFO] client version is latest");
-        return;
-    }
-
-    for (const { name, dir, bundle, dependencyField } of packages) {
-        const pkgFile = path.join(dir, "package.json");
-        const srcDir = path.join(process.cwd(), dir, "src");
-        const distDir = path.join(process.cwd(), dir, "dist");
-        const indexFile = path.join(srcDir, "index.js");
-        const pkg = _readJson(pkgFile);
-
-        const deps = pkg[dependencyField] || {};
-        const clients = Object.keys(deps).filter((dep) => dep.startsWith(AWS_CLIENT_PREFIX));
+    for (const client of full.clients) {
+        const currentVersion = full.deps[client]
         
-        if (clients.length === 0) return;
+        // 1. check latest version from npm
+        const clientInfo = JSON.parse(execSync(`npm view ${client} version deprecated --json`, { encoding: 'utf8' }))
+        const latestVersion = typeof clientInfo == 'string' ? clientInfo : clientInfo.version
+        const isDeprecated = typeof clientInfo == 'string' ? false : !!clientInfo.deprecated
+        
 
-        // 2. update dependency 
-        for (const client of clients) {
-            const currentVersion = deps[client];
-            if (latestVersion !== currentVersion) {
-                deps[client] = latestVersion;
-            } else {
-                console.log('[INFO] Already latest version');
-                return
+        // 2. update dependency (full & lite)
+        if (currentVersion !== latestVersion) {
+            full.deps[client] = latestVersion
+            if (lite.clients.includes(client)) {
+                lite.deps[client] = latestVersion
             }
+            updateCnt += 1
+        } else if (currentVersion == latestVersion && !isDeprecated) continue
+
+        full.pkg.version = latestVersion
+        lite.pkg.version = latestVersion
+
+        // 3. if client deprecated add comment to index.js 
+        if (isDeprecated) {
+            _setDeprecatedComment(full.indexFile, client, isDeprecated);
+            if (lite.clients.includes(client)) _setDeprecatedComment(lite.indexFile, client, isDeprecated);
         }
 
-        console.log(`[INFO] ${name} → ${clients.length} clients`);
-        console.log(`[INFO] Updating client version from ${pkg.version} to ${latestVersion}`);
-        pkg.version = latestVersion;
-
-        fs.writeFileSync(pkgFile, `${JSON.stringify(pkg, null, 2)}\n`);
-        console.log("[INFO] package.json updated successfully.");
-
+        // 4. write back to package.json
+        fs.writeFileSync(full.pkgFile, `${JSON.stringify(full.pkg, null, 2)}\n`);
+        fs.writeFileSync(lite.pkgFile, `${JSON.stringify(lite.pkg, null, 2)}\n`);
     }
+    console.log(`[INFO] total: ${full.clients.length}, update: ${updateCnt} `)
+    console.log(`[INFO] Updating client version to ${full.pkg.version}`);
 }
 
-updateClients();
+updateClients()
