@@ -2,7 +2,7 @@ name: Update version and release
 on:
   schedule:
     # UTC sunday 13:00 // KST sunday 22:00
-    - cron: "0 13 * * 0"
+    - cron: "0 5 * * 5"
   workflow_dispatch:
 
 jobs:
