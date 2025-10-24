@@ -281,8 +281,8 @@ export * as odb from "@aws-sdk/client-odb";
 export * as omics from "@aws-sdk/client-omics";
 export * as opensearch from "@aws-sdk/client-opensearch";
 export * as opensearchserverless from "@aws-sdk/client-opensearchserverless";
-export * as opsworks from "@aws-sdk/client-opsworks";
-export * as opsworkscm from "@aws-sdk/client-opsworkscm";
+export * as opsworks from "@aws-sdk/client-opsworks"; // deprecated
+export * as opsworkscm from "@aws-sdk/client-opsworkscm"; // deprecated
 export * as organizations from "@aws-sdk/client-organizations";
 export * as osis from "@aws-sdk/client-osis";
 export * as outposts from "@aws-sdk/client-outposts";
@@ -365,7 +365,7 @@ export * as sfn from "@aws-sdk/client-sfn";
 export * as shield from "@aws-sdk/client-shield";
 export * as signer from "@aws-sdk/client-signer";
 export * as simspaceweaver from "@aws-sdk/client-simspaceweaver";
-export * as sms from "@aws-sdk/client-sms";
+export * as sms from "@aws-sdk/client-sms"; // deprecated
 export * as snowDeviceManagement from "@aws-sdk/client-snow-device-management";
 export * as snowball from "@aws-sdk/client-snowball";
 export * as sns from "@aws-sdk/client-sns";
