@@ -2,7 +2,7 @@ name: Update version and release
 on:
   schedule:
     # UTC sunday 13:00 // KST sunday 22:00
-    - cron: "0 5 * * 5"
+    - cron: "30 5 * * 5"
   workflow_dispatch:
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
-        run: npm ci
+        run: npm i
 
       # 1. update version
       - name: Update AWS clients dependencies
