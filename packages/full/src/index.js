@@ -24,7 +24,7 @@ export * as applicationcostprofiler from "@aws-sdk/client-applicationcostprofile
 export * as apprunner from "@aws-sdk/client-apprunner";
 export * as appstream from "@aws-sdk/client-appstream";
 export * as appsync from "@aws-sdk/client-appsync";
-export * as apptest from "@aws-sdk/client-apptest";
+export * as apptest from "@aws-sdk/client-apptest"; // deprecated
 export * as arcRegionSwitch from "@aws-sdk/client-arc-region-switch";
 export * as arcZonalShift from "@aws-sdk/client-arc-zonal-shift";
 export * as artifact from "@aws-sdk/client-artifact";
@@ -193,7 +193,7 @@ export * as iotManagedIntegrations from "@aws-sdk/client-iot-managed-integration
 export * as iotWireless from "@aws-sdk/client-iot-wireless";
 export * as iotanalytics from "@aws-sdk/client-iotanalytics";
 export * as iotdeviceadvisor from "@aws-sdk/client-iotdeviceadvisor";
-export * as iotfleethub from "@aws-sdk/client-iotfleethub";
+export * as iotfleethub from "@aws-sdk/client-iotfleethub"; // deprecated
 export * as iotfleetwise from "@aws-sdk/client-iotfleetwise";
 export * as iotsecuretunneling from "@aws-sdk/client-iotsecuretunneling";
 export * as iotsitewise from "@aws-sdk/client-iotsitewise";
@@ -230,8 +230,8 @@ export * as licenseManagerUserSubscriptions from "@aws-sdk/client-license-manage
 export * as lightsail from "@aws-sdk/client-lightsail";
 export * as location from "@aws-sdk/client-location";
 export * as lookoutequipment from "@aws-sdk/client-lookoutequipment";
-export * as lookoutmetrics from "@aws-sdk/client-lookoutmetrics";
-export * as lookoutvision from "@aws-sdk/client-lookoutvision";
+export * as lookoutmetrics from "@aws-sdk/client-lookoutmetrics"; // deprecated
+export * as lookoutvision from "@aws-sdk/client-lookoutvision"; // deprecated
 export * as m2 from "@aws-sdk/client-m2";
 export * as machineLearning from "@aws-sdk/client-machine-learning";
 export * as macie2 from "@aws-sdk/client-macie2";
@@ -308,8 +308,8 @@ export * as proton from "@aws-sdk/client-proton";
 export * as qapps from "@aws-sdk/client-qapps";
 export * as qbusiness from "@aws-sdk/client-qbusiness";
 export * as qconnect from "@aws-sdk/client-qconnect";
-export * as qldb from "@aws-sdk/client-qldb";
-export * as qldbSession from "@aws-sdk/client-qldb-session";
+export * as qldb from "@aws-sdk/client-qldb"; // deprecated
+export * as qldbSession from "@aws-sdk/client-qldb-session"; // deprecated
 export * as quicksight from "@aws-sdk/client-quicksight";
 export * as ram from "@aws-sdk/client-ram";
 export * as rbin from "@aws-sdk/client-rbin";
