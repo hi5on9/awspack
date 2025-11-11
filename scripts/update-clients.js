@@ -58,7 +58,10 @@ function updateClients() {
 
   let updatedCount = 0;
 
-  let latestVersion = fullPkg.version;
+  let latestVersion =
+    typeof fullPkg.version === "string" && fullPkg.version.trim().length > 0
+      ? fullPkg.version
+      : "0.0.0";
 
   // 1. check latest version from npm
   for (const clientName of clients) {
@@ -70,14 +73,19 @@ function updateClients() {
     }
 
     if (clientName in liteDevDeps) liteDevDeps[clientName] = version;
- 
+
     const alias = _toAlias(clientName);
     if (seenAlias.has(alias)) {
       throw new Error(`Alias collision detected for "${alias}" (package: ${clientName})`);
     }
     seenAlias.add(alias);
     aliasEntries.push({ alias, name: clientName, deprecated });
-    latestVersion = Math.max(parseFloat(latestVersion), parseFloat(version));
+    if (
+      typeof version === "string" &&
+      version.localeCompare(latestVersion, undefined, { numeric: true, sensitivity: "base" }) > 0
+    ) {
+      latestVersion = version;
+    }
   }
 
   fullPkg.version = latestVersion;
