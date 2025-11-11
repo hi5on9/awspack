@@ -1,6 +1,6 @@
 {
   "name": "awspack-lite",
-  "version": 3.928,
+  "version": "3.928.0",
   "description": "Lightweight AWS SDK v3 bundle including popular services only",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

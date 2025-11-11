@@ -1,6 +1,6 @@
 {
   "name": "awspack",
-  "version": 3.928,
+  "version": "3.928.0",
   "description": "Unified, auto-updating AWS SDK v3 wrapper including all AWS clients",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
