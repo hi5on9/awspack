@@ -4,10 +4,17 @@
   "description": "Unified, auto-updating AWS SDK v3 wrapper including all AWS clients",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./clients/*": {
+      "types": "./dist/clients/*.d.ts",
+      "import": "./dist/clients/*.js",
+      "default": "./dist/clients/*.js"
     },
     "./package.json": "./package.json"
   },
@@ -16,9 +23,19 @@
     "src"
   ],
   "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "clients/*": [
+        "dist/clients/*.d.ts"
+      ]
+    }
+  },
   "license": "MIT",
   "type": "module",
-  "dependencies": {
+  "scripts": {
+    "build": "node ./build.mjs"
+  },
+  "devDependencies": {
     "@aws-sdk/client-accessanalyzer": "3.927.0",
     "@aws-sdk/client-account": "3.927.0",
     "@aws-sdk/client-acm": "3.927.0",

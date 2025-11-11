@@ -1,0 +1,26 @@
+export * as apiGateway from "@aws-sdk/client-api-gateway";
+export * as apigatewayv2 from "@aws-sdk/client-apigatewayv2";
+export * as cloudformation from "@aws-sdk/client-cloudformation";
+export * as cloudfront from "@aws-sdk/client-cloudfront";
+export * as cloudwatch from "@aws-sdk/client-cloudwatch";
+export * as cloudwatchLogs from "@aws-sdk/client-cloudwatch-logs";
+export * as cognitoIdentity from "@aws-sdk/client-cognito-identity";
+export * as cognitoIdentityProvider from "@aws-sdk/client-cognito-identity-provider";
+export * as dynamodb from "@aws-sdk/client-dynamodb";
+export * as ec2 from "@aws-sdk/client-ec2";
+export * as ecr from "@aws-sdk/client-ecr";
+export * as ecs from "@aws-sdk/client-ecs";
+export * as eventbridge from "@aws-sdk/client-eventbridge";
+export * as iam from "@aws-sdk/client-iam";
+export * as lambda from "@aws-sdk/client-lambda";
+export * as rds from "@aws-sdk/client-rds";
+export * as route53 from "@aws-sdk/client-route-53";
+export * as s3 from "@aws-sdk/client-s3";
+export * as secretsManager from "@aws-sdk/client-secrets-manager";
+export * as sesv2 from "@aws-sdk/client-sesv2";
+export * as sfn from "@aws-sdk/client-sfn";
+export * as sns from "@aws-sdk/client-sns";
+export * as sqs from "@aws-sdk/client-sqs";
+export * as ssm from "@aws-sdk/client-ssm";
+export * as sts from "@aws-sdk/client-sts";
+

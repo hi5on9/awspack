@@ -1,90 +1,111 @@
-import fs from "fs";
-import path from "path";
-import { execSync } from "child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { execSync } from "node:child_process";
 
 const AWS_CLIENT_PREFIX = "@aws-sdk/client-";
+const ROOT_DIR = process.cwd();
+const FULL_DIR = path.join(ROOT_DIR, "packages/full");
+const LITE_DIR = path.join(ROOT_DIR, "packages/lite");
+const FULL_PKG_PATH = path.join(FULL_DIR, "package.json");
+const LITE_PKG_PATH = path.join(LITE_DIR, "package.json");
+const FULL_SRC_INDEX_JS = path.join(FULL_DIR, "src/index.js");
+const FULL_SRC_INDEX_DTS = path.join(FULL_DIR, "src/index.d.ts");
 
-function _readJson(file) {
-    return JSON.parse(fs.readFileSync(file, "utf-8"))
+function _readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-const FULL_DIR = "packages/full"
-const LITE_DIR = "packages/lite"
-
-function _getPkg(dir) {
-    const pkgFile = path.join(dir, "package.json")
-    const srcDir = path.join(process.cwd(), dir, "src");
-    const indexFile = path.join(srcDir, "index.js");
-    const pkg = _readJson(pkgFile)
-    const deps = pkg["dependencies"] || {} 
-    const clients = Object.keys(deps).filter((dep) => dep.startsWith(AWS_CLIENT_PREFIX));
-    return { pkgFile, pkg, deps, clients , srcDir, indexFile}
+function _sortObjectKeys(obj) {
+  if (!obj) return undefined;
+  return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
 }
 
-function _setDeprecatedComment(indexFile, client, deprecated) {
-    if (!fs.existsSync(indexFile)) return;
-    const target = `"${client}";`;
-    const lines = fs.readFileSync(indexFile, "utf-8").split("\n");
-    let changed = false;
+function _toAlias(clientName) {
+  const raw = clientName.slice(AWS_CLIENT_PREFIX.length);
+  return raw
+    .split(/-+/)
+    .map((segment, index) =>
+      index === 0 ? segment : segment.charAt(0).toUpperCase() + segment.slice(1),
+    )
+    .join("");
+}
 
-    const updated = lines.map((line) => {
-        if (!line.includes(target)) return line;
-        const hasDeprecated = /\s\/\/\s*deprecated\s*$/.test(line);
-        if (deprecated && !hasDeprecated) {
-            changed = true;
-            console.log(`[INFO] ${client} is deprecated`);
-            return `${line} // deprecated`;
-        }
-        if (!deprecated && hasDeprecated) {
-            changed = true;
-            return line.replace(/\s*\/\/\s*deprecated\s*$/, "");
-        }
-        return line;
-    });
+function _fetchClientMetadata(clientName) {
+  const output = JSON.parse(
+    execSync(`npm view ${clientName} version deprecated --json`, {
+      encoding: "utf8",
+    }),
+  );
+  if (typeof output === "string") {
+    return { version: output, deprecated: false };
+  }
+  return { version: output.version, deprecated: Boolean(output.deprecated) };
+}
 
-    if (changed) {
-        fs.writeFileSync(indexFile, updated.join("\n"));
+function updateClients() {
+  const fullPkg = _readJson(FULL_PKG_PATH);
+  const litePkg = _readJson(LITE_PKG_PATH);
+
+  const fullDevDeps = fullPkg.devDependencies ?? {};
+  const liteDevDeps = litePkg.devDependencies ?? {};
+
+  const clients = Object.keys(fullDevDeps)
+    .filter((name) => name.startsWith(AWS_CLIENT_PREFIX))
+    .sort((a, b) => a.localeCompare(b));
+
+  const aliasEntries = [];
+  const seenAlias = new Set();
+
+  let updatedCount = 0;
+
+  let latestVersion = fullPkg.version;
+
+  // 1. check latest version from npm
+  for (const clientName of clients) {
+    const { version, deprecated } = _fetchClientMetadata(clientName);
+
+    if (fullDevDeps[clientName] !== version) {
+      fullDevDeps[clientName] = version;
+      updatedCount += 1;
     }
-}
 
-async function updateClients() {
-    const full = _getPkg(FULL_DIR)
-    const lite = _getPkg(LITE_DIR)
-    let updateCnt = 0
-
-    for (const client of full.clients) {
-        const currentVersion = full.deps[client]
-        
-        // 1. check latest version from npm
-        const clientInfo = JSON.parse(execSync(`npm view ${client} version deprecated --json`, { encoding: 'utf8' }))
-        const latestVersion = typeof clientInfo == 'string' ? clientInfo : clientInfo.version
-        const isDeprecated = typeof clientInfo == 'string' ? false : !!clientInfo.deprecated
-        
-
-        // 2. update dependency (full & lite)
-        if (currentVersion !== latestVersion) {
-            full.deps[client] = latestVersion
-            if (lite.clients.includes(client)) {
-                lite.deps[client] = latestVersion
-            }
-            updateCnt += 1
-        } else if (currentVersion == latestVersion && !isDeprecated) continue
-
-        full.pkg.version = latestVersion
-        lite.pkg.version = latestVersion
-
-        // 3. if client deprecated add comment to index.js 
-        if (isDeprecated) {
-            _setDeprecatedComment(full.indexFile, client, isDeprecated);
-            if (lite.clients.includes(client)) _setDeprecatedComment(lite.indexFile, client, isDeprecated);
-        }
-
-        // 4. write back to package.json
-        fs.writeFileSync(full.pkgFile, `${JSON.stringify(full.pkg, null, 2)}\n`);
-        fs.writeFileSync(lite.pkgFile, `${JSON.stringify(lite.pkg, null, 2)}\n`);
+    if (clientName in liteDevDeps) liteDevDeps[clientName] = version;
+ 
+    const alias = _toAlias(clientName);
+    if (seenAlias.has(alias)) {
+      throw new Error(`Alias collision detected for "${alias}" (package: ${clientName})`);
     }
-    console.log(`[INFO] total: ${full.clients.length}, update: ${updateCnt} `)
-    console.log(`[INFO] Updating client version to ${full.pkg.version}`);
+    seenAlias.add(alias);
+    aliasEntries.push({ alias, name: clientName, deprecated });
+    latestVersion = Math.max(parseFloat(latestVersion), parseFloat(version));
+  }
+
+  fullPkg.version = latestVersion;
+  litePkg.version = latestVersion;
+  fullPkg.devDependencies = _sortObjectKeys(fullDevDeps);
+  litePkg.devDependencies = _sortObjectKeys(liteDevDeps);
+
+  // 2. regenerate source code (if deprecated add comment)
+  const sorted = [...aliasEntries].sort((a, b) => a.alias.localeCompare(b.alias));
+  const jsLines = sorted.map(({ alias, name, deprecated }) => {
+    const suffix = deprecated ? " // deprecated" : "";
+    return `export * as ${alias} from "${name}";${suffix}`;
+  });
+  const dtsLines = sorted.map(({ alias, name }) => `export * as ${alias} from "${name}";`);
+
+  // 3. write to full index.js and index.d.ts
+  fs.writeFileSync(FULL_SRC_INDEX_JS, `${jsLines.join("\n")}\n`);
+  fs.writeFileSync(FULL_SRC_INDEX_DTS, `${dtsLines.join("\n")}\n`);
+
+  // 4. write to full package.json and lite package.json
+  fs.writeFileSync(FULL_PKG_PATH, `${JSON.stringify(fullPkg, null, 2)}\n`);
+  fs.writeFileSync(LITE_PKG_PATH, `${JSON.stringify(litePkg, null, 2)}\n`);
+
+  console.log(`[update-clients] Updated ${updatedCount} package versions`);
+
+  execSync("npm run build --workspace=awspack", { stdio: "inherit" });
+  execSync("npm run build --workspace=awspack-lite", { stdio: "inherit" });
 }
 
-updateClients()
+updateClients();
+

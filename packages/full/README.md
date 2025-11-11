@@ -56,6 +56,10 @@ import { s3, lambda } from "awspack";
 
 const s3Client = new s3.S3Client({ region: "us-east-1" });
 const lambdaClient = new lambda.LambdaClient({});
+
+import { S3Client } from "awspack/clients/s3"; // service-specific entry
+
+const ec2Client = new ec2.EC2Client({});
 ```
 
 Future bundles may group services by domain (e.g., analytics-only, serverless-only ...)
