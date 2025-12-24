@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "repository" : "https://github.com/hi5on9/awspack",
+  "repository": "https://github.com/hi5on9/awspack",
   "exports": {
     ".": {
       "import": "./dist/index.js",
