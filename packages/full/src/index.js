@@ -143,7 +143,7 @@ export * as elasticBeanstalk from "@aws-sdk/client-elastic-beanstalk";
 export * as elasticLoadBalancing from "@aws-sdk/client-elastic-load-balancing";
 export * as elasticLoadBalancingV2 from "@aws-sdk/client-elastic-load-balancing-v2";
 export * as elasticsearchService from "@aws-sdk/client-elasticsearch-service";
-export * as elasticTranscoder from "@aws-sdk/client-elastic-transcoder";
+export * as elasticTranscoder from "@aws-sdk/client-elastic-transcoder"; // deprecated
 export * as emr from "@aws-sdk/client-emr";
 export * as emrContainers from "@aws-sdk/client-emr-containers";
 export * as emrServerless from "@aws-sdk/client-emr-serverless";
