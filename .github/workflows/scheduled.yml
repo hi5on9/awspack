@@ -4,9 +4,14 @@ on:
     # UTC sunday 13:00 // KST sunday 22:00
     - cron: "5 4 * * 3"
   workflow_dispatch:
+    inputs:
+      test:
+        required: false
+        type: boolean
+    
   
 permissions:
-  id-token: write # 💡 Required for OIDC
+  id-token: write 
   contents: write
 jobs:
   run:
@@ -38,7 +43,7 @@ jobs:
       - name: Detect generated changes
         id: changes
         run: |
-          if git diff --quiet; then
+          if git diff --quiet packages/full/package.json packages/lite/package.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -57,13 +62,13 @@ jobs:
 
       # 4. publish
       - name: Publish awspack
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.changes.outputs.changed == 'true' || ${{ github.event.inputs.test }}
         run: npm publish --workspace packages/full --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish awspack-lite
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.changes.outputs.changed == 'true' || ${{ github.event.inputs.test }}
         run: npm publish --workspace packages/lite --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
