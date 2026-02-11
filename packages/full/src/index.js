@@ -149,7 +149,7 @@ export * as emrContainers from "@aws-sdk/client-emr-containers";
 export * as emrServerless from "@aws-sdk/client-emr-serverless";
 export * as entityresolution from "@aws-sdk/client-entityresolution";
 export * as eventbridge from "@aws-sdk/client-eventbridge";
-export * as evidently from "@aws-sdk/client-evidently";
+export * as evidently from "@aws-sdk/client-evidently"; // deprecated
 export * as evs from "@aws-sdk/client-evs";
 export * as finspace from "@aws-sdk/client-finspace";
 export * as finspaceData from "@aws-sdk/client-finspace-data";
@@ -185,7 +185,7 @@ export * as inspectorScan from "@aws-sdk/client-inspector-scan";
 export * as internetmonitor from "@aws-sdk/client-internetmonitor";
 export * as invoicing from "@aws-sdk/client-invoicing";
 export * as iot from "@aws-sdk/client-iot";
-export * as iotanalytics from "@aws-sdk/client-iotanalytics";
+export * as iotanalytics from "@aws-sdk/client-iotanalytics"; // deprecated
 export * as iotDataPlane from "@aws-sdk/client-iot-data-plane";
 export * as iotdeviceadvisor from "@aws-sdk/client-iotdeviceadvisor";
 export * as iotEvents from "@aws-sdk/client-iot-events";
